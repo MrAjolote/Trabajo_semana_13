@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Alertas | AquaSteps</title>
+  <script>try{var t=localStorage.getItem("aquasteps-tema");if(!t&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches){t="oscuro"}if(t==="oscuro"){document.documentElement.setAttribute("data-tema","oscuro")}}catch(e){}</script>
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="icon" type="image/svg+xml" href="iconos/favicon.svg">
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="cabecera">
+  <div class="contenedor barra">
+    <a class="marca" href="index.html"><img src="iconos/favicon.svg" alt="" width="42" height="42">AquaSteps</a>
+    <nav aria-label="Navegación principal">
+      <ul class="menu">
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="alertas.html" aria-current="page">Alertas</a></li>
+        <li><a href="perdidas.html">Pérdidas de agua</a></li>
+      </ul>
+    </nav>
+    <button type="button" id="btn-tema" class="btn-tema" aria-pressed="false" aria-label="Modo oscuro" title="Modo oscuro">
+      <svg class="icono-luna" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" fill="currentColor"/></svg>
+      <svg class="icono-sol" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></g></svg>
+    </button>
+  </div>
+</header>
+
+<main id="contenido">
+  <!-- Nivel 1: Avisos prioritarios y monitoreo activo por ambiente -->
+  <section class="seccion contenedor" aria-labelledby="titulo">
+    <nav aria-label="Ruta de navegación">
+      <a class="regresar" href="index.html">← Volver al inicio</a>
+    </nav>
+    <header class="encabezado-seccion">
+      <p class="etiqueta">Monitoreo activo</p>
+      <h1 id="titulo">Alertas y estado por lugar</h1>
+      <p class="nota">Prioriza los puntos con mayor pérdida de agua, verifica las acciones sugeridas o solicita asistencia inmediata.</p>
+    </header>
+
+    <div id="notificaciones" aria-live="polite"></div>
+
+    <div class="barra-filtros">
+      <div id="filtros" class="segmento" role="group" aria-label="Filtrar por estado">
+        <button type="button" data-filtro="todos" aria-pressed="true">Todos <span class="conteo">0</span></button>
+        <button type="button" data-filtro="critico" aria-pressed="false">Crítico <span class="conteo">0</span></button>
+        <button type="button" data-filtro="moderado" aria-pressed="false">Moderado <span class="conteo">0</span></button>
+        <button type="button" data-filtro="leve" aria-pressed="false">Leve <span class="conteo">0</span></button>
+        <button type="button" data-filtro="sin" aria-pressed="false">Sin fuga <span class="conteo">0</span></button>
+      </div>
+      <div class="orden">
+        <label for="orden">Ordenar por</label>
+        <select id="orden">
+          <option value="gravedad">Gravedad</option>
+          <option value="costo">Costo</option>
+          <option value="nombre">Nombre</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="lugares" class="dos-columnas lugares" tabindex="-1"></div>
+  </section>
+
+  <!-- Nivel 2: Respuesta y asistencia técnica según gravedad -->
+  <section id="ayuda" class="seccion fondo" aria-labelledby="ayuda-titulo">
+    <div class="contenedor">
+      <header class="encabezado-seccion">
+        <p class="etiqueta">Respuesta y soporte</p>
+        <div class="titulo-fila">
+          <h2 id="ayuda-titulo">Servicios de ayuda según el caso</h2>
+          <div class="orden">
+            <label for="ayuda-lugar">Evaluar lugar</label>
+            <select id="ayuda-lugar"></select>
+          </div>
+        </div>
+      </header>
+      <div id="ayuda-diagnostico" class="tarjeta diagnostico" aria-live="polite"></div>
+      <div id="ayuda-servicios" class="dos-columnas servicios-grid"></div>
+    </div>
+  </section>
+
+  <!-- Nivel 3: Registro operativo de mediciones y nuevos ambientes -->
+  <section class="seccion" aria-labelledby="operaciones-titulo">
+    <div class="contenedor">
+      <header class="encabezado-seccion">
+        <p class="etiqueta">Gestión operativa</p>
+        <h2 id="operaciones-titulo">Registro manual y configuración de lugares</h2>
+      </header>
+      <div class="dos-columnas formularios">
+        <article>
+          <h3>Registrar medición</h3>
+          <form id="medicion" class="medicion">
+            <label for="lugar">Lugar</label>
+            <select id="lugar" required></select>
+            <label for="cantidad">Cantidad perdida (ml)</label>
+            <input id="cantidad" type="number" min="0" max="1000" step="1" required>
+            <div class="botones">
+              <button type="submit" class="boton">Registrar</button>
+              <button type="button" id="restablecer" class="boton secundario">Restablecer datos</button>
+            </div>
+          </form>
+          <p id="mensaje" class="nota" role="status"></p>
+        </article>
+        <article>
+          <h3>Agregar nuevo lugar</h3>
+          <form id="nuevo-lugar" class="medicion">
+            <label for="nuevo-nombre">Nombre del lugar</label>
+            <input id="nuevo-nombre" type="text" maxlength="30" placeholder="Ej.: Lavandería" required autocomplete="off">
+            <div class="par">
+              <div>
+                <label for="nuevo-lat">Latitud (opcional)</label>
+                <input id="nuevo-lat" type="number" step="any" min="-90" max="90" placeholder="-12.046374">
+              </div>
+              <div>
+                <label for="nuevo-lng">Longitud (opcional)</label>
+                <input id="nuevo-lng" type="number" step="any" min="-180" max="180" placeholder="-77.042793">
+              </div>
+            </div>
+            <div class="botones">
+              <button type="submit" class="boton">Agregar lugar</button>
+              <button type="button" id="usar-ubicacion" class="boton secundario">Usar mi ubicación</button>
+            </div>
+          </form>
+          <p id="mensaje-lugar" class="nota" role="status"></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nivel 4: Bitácora secundaria de auditoría -->
+  <section class="seccion fondo" aria-labelledby="historial-titulo">
+    <div class="contenedor">
+      <div class="titulo-fila">
+        <div>
+          <p class="etiqueta">Bitácora</p>
+          <h2 id="historial-titulo">Historial de movimientos</h2>
+        </div>
+        <button type="button" id="borrar-historial" class="boton secundario">Borrar historial</button>
+      </div>
+      <ol id="historial" class="historial"></ol>
+    </div>
+  </section>
+</main>
+
+<dialog id="modal-ayuda" class="modal" aria-labelledby="modal-ayuda-titulo">
+  <form id="form-solicitud" class="modal-contenido" method="dialog">
+    <div class="titulo-fila">
+      <h2 id="modal-ayuda-titulo" class="titulo-peq">Solicitar servicio de ayuda</h2>
+      <button type="button" id="modal-cerrar" class="modal-cerrar" aria-label="Cerrar ventana">×</button>
+    </div>
+    <p id="modal-resumen" class="nota"></p>
+    <div class="modal-campos">
+      <label for="sol-nombre">Tu nombre o contacto</label>
+      <input id="sol-nombre" type="text" maxlength="60" placeholder="Ej.: Familia Pérez" required>
+      <label for="sol-telefono">Teléfono / WhatsApp</label>
+      <input id="sol-telefono" type="tel" maxlength="20" placeholder="Ej.: 987 654 321" required>
+      <label for="sol-detalle">Detalle del problema (autocompletado según sensor)</label>
+      <textarea id="sol-detalle" rows="3" maxlength="240" required></textarea>
+    </div>
+    <div class="botones">
+      <button type="submit" class="boton">Confirmar solicitud</button>
+      <a id="sol-whatsapp" class="boton secundario" href="#" target="_blank" rel="noopener noreferrer">Enviar por WhatsApp</a>
+      <a id="sol-llamar" class="boton secundario" href="#">Llamar ahora</a>
+    </div>
+  </form>
+</dialog>
+
+<footer class="pie">
+  <div class="contenedor">
+    <p><strong>AquaSteps</strong> · Monitoreo de alertas y pérdidas de agua</p>
+    <nav class="redes" aria-label="Redes sociales de referencia">
+      <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><img src="iconos/facebook.svg" alt="" width="24" height="24">Facebook</a>
+      <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><img src="iconos/instagram.svg" alt="" width="24" height="24">Instagram</a>
+      <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer"><img src="iconos/youtube.svg" alt="" width="24" height="24">YouTube</a>
+    </nav>
+    <p>© 2026 AquaSteps · <a href="FUENTES.txt">Créditos de recursos</a></p>
+  </div>
+</footer>
+<script src="js/nucleo.js" defer></script>
+<script src="js/script.js" defer></script>
+<script src="js/alertas.js" defer></script>
+</body>
+</html>
