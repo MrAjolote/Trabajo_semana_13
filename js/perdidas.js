@@ -290,6 +290,13 @@
 
         if (conFuga.length === 0) {
             acciones.appendChild(A.crear("li", "sin-numero", "No hay acciones pendientes."));
+        } else {
+            const principal = conFuga[0];
+            const itemAyuda = A.crear("li", "sin-numero");
+            const enlaceAyuda = A.crear("a", "boton secundario", "Solicitar gasfitero o asistencia para " + principal.nombre + " →");
+            enlaceAyuda.href = "alertas.html?lugar=" + encodeURIComponent(principal.id) + "#ayuda";
+            itemAyuda.appendChild(enlaceAyuda);
+            acciones.appendChild(itemAyuda);
         }
         conFuga.forEach(function (lugar) {
             A.estadoDe(lugar).operaciones.forEach(function (operacion, i) {

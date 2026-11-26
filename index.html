@@ -17,15 +17,8 @@
     <nav aria-label="Navegación principal">
       <ul class="menu">
         <li><a href="index.html" aria-current="page">Inicio</a></li>
-        <li>
-          <details class="desplegable">
-            <summary>Consultar</summary>
-            <ul class="submenu">
-              <li><a href="alertas.html">Alertas</a></li>
-              <li><a href="perdidas.html">Pérdidas de agua</a></li>
-            </ul>
-          </details>
-        </li>
+        <li><a href="alertas.html">Alertas</a></li>
+        <li><a href="perdidas.html">Pérdidas de agua</a></li>
       </ul>
     </nav>
     <button type="button" id="btn-tema" class="btn-tema" aria-pressed="false" aria-label="Modo oscuro" title="Modo oscuro">
@@ -34,11 +27,15 @@
     </button>
   </div>
 </header>
+
 <main id="contenido">
+  <!-- Nivel 1: Estado crítico en tiempo real, métricas clave y acciones principales -->
   <section id="inicio" class="hero contenedor dos-columnas" aria-labelledby="titulo">
-    <div>
-      <p class="etiqueta">Control del agua</p>
-      <h1 id="titulo">AquaSteps</h1>
+    <div class="hero-principal">
+      <p class="etiqueta">Control y monitoreo del agua</p>
+      <h1 id="titulo">Estado hídrico del hogar</h1>
+      <p class="fecha">Actualizado: <span id="fecha-actual"></span></p>
+
       <div id="alerta" class="alerta sin" role="alert"><strong>SIN ALERTAS</strong><span>Ningún lugar requiere mantenimiento por ahora.</span></div>
 
       <div class="medidor" role="group" aria-label="Pérdida total de hoy">
@@ -46,54 +43,83 @@
         <div><span class="medidor-etq">Costo estimado</span><strong id="contador-costo">0,00 soles</strong></div>
       </div>
 
-      <section class="simulador tarjeta" aria-labelledby="sim-titulo">
-        <h2 id="sim-titulo" class="titulo-peq">Simulador de fuga</h2>
-        <div class="sim-campos">
-          <div>
-            <label for="sim-lugar">Lugar</label>
-            <select id="sim-lugar"></select>
-          </div>
-          <div>
-            <label for="sim-intensidad">Intensidad</label>
-            <select id="sim-intensidad">
-              <option value="leve">Leve (5–19 ml)</option>
-              <option value="moderada" selected>Moderada (20–29 ml)</option>
-              <option value="critica">Crítica (30–60 ml)</option>
-            </select>
-          </div>
-        </div>
-        <div class="botones">
-          <button type="button" id="btn-simular" class="boton peligro">Simular detección de fuga</button>
-          <button type="button" id="btn-detener" class="boton secundario">Detener fuga</button>
-        </div>
-        <label class="interruptor" for="sim-vivo">
-          <input type="checkbox" id="sim-vivo" role="switch">
-          <span class="pista" aria-hidden="true"></span>
-          <span>Monitoreo en vivo <small>la pérdida crece sola; se detiene al salir de la página</small></span>
-        </label>
-        <p id="sim-mensaje" class="nota" role="status"></p>
-      </section>
-
-      <div class="fecha">La fecha de hoy es: <span id="fecha-actual"></span></div>
+      <div class="botones hero-acciones">
+        <a class="boton" href="alertas.html">Gestionar alertas y gasfitería</a>
+        <a class="boton secundario" href="perdidas.html">Analizar pérdidas y ahorro</a>
+      </div>
     </div>
+
     <figure id="postal" class="postal" data-estado="sin">
-      <img class="ilustracion" src="imagenes/gota.svg" alt="Ilustración de una gota de agua" width="400" height="300">
+      <img class="ilustracion" src="imagenes/gota.svg" alt="Ilustración de una gota de agua que reacciona al nivel de fuga" width="400" height="300">
       <span class="gotas" aria-hidden="true"><i></i><i></i><i></i></span>
     </figure>
   </section>
-  <section class="seccion fondo">
-    <div class="contenedor dos-columnas">
-      <article class="tarjeta acceso">
-        <a class="boton" href="alertas.html">Ver alertas</a>
-        <img src="iconos/gota.svg" alt="" width="48" height="48">
-      </article>
-      <article class="tarjeta acceso">
-        <a class="boton" href="perdidas.html">Ver pérdidas de agua</a>
-        <img src="iconos/gota.svg" alt="" width="48" height="48">
-      </article>
+
+  <!-- Nivel 2: Módulos principales de consulta y operación -->
+  <section class="seccion fondo" aria-labelledby="modulos-titulo">
+    <div class="contenedor">
+      <header class="encabezado-seccion">
+        <p class="etiqueta">Funciones principales</p>
+        <h2 id="modulos-titulo">Módulos de control y diagnóstico</h2>
+      </header>
+      <div class="dos-columnas">
+        <article class="tarjeta acceso">
+          <div class="acceso-info">
+            <h3>Alertas y asistencia técnica</h3>
+            <p class="nota">Revisa fugas activas por ambiente, marca tareas de reparación y contacta gasfiteros de emergencia.</p>
+            <a class="boton" href="alertas.html">Ir a Alertas</a>
+          </div>
+          <img src="iconos/gota.svg" alt="" width="48" height="48">
+        </article>
+        <article class="tarjeta acceso">
+          <div class="acceso-info">
+            <h3>Reporte de pérdidas y ahorro</h3>
+            <p class="nota">Visualiza gráficos por día o semana, exporta reportes en CSV y calcula cuánto dinero puedes ahorrar.</p>
+            <a class="boton" href="perdidas.html">Ir a Pérdidas de agua</a>
+          </div>
+          <img src="iconos/gota.svg" alt="" width="48" height="48">
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nivel 3: Tutorial interactivo para aprender a usar AquaSteps -->
+  <section class="seccion" aria-labelledby="tut-titulo">
+    <div class="contenedor">
+      <header class="encabezado-seccion">
+        <p class="etiqueta">Guía paso a paso</p>
+        <p class="nota">Recorre las funciones de AquaSteps con un tutorial interactivo: detecta una fuga de prueba, gestiona alertas y calcula tu ahorro.</p>
+      </header>
+      <section id="tutorial-app" class="tutorial tarjeta" aria-labelledby="tut-titulo">
+        <div class="tut-cabecera">
+          <span id="tut-etiqueta" class="tut-paso-badge">Paso 1 de 5</span>
+          <div id="tut-puntos" class="tut-puntos" role="group" aria-label="Pasos del tutorial"></div>
+        </div>
+        <div class="tut-progreso" role="progressbar" id="tut-barra" aria-label="Progreso del tutorial" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20">
+          <span class="tut-progreso-valor" style="width: 20%;"></span>
+        </div>
+
+        <h2 id="tut-titulo" class="titulo-peq">1. Detecta fugas y mide su costo diario</h2>
+        <p id="tut-descripcion" class="tut-desc"></p>
+        <div id="tut-objetivo" class="tut-objetivo"></div>
+
+        <div class="botones tut-acciones">
+          <button type="button" id="tut-accion" class="boton">Probar detección de fuga</button>
+          <a id="tut-enlace" class="boton secundario" href="alertas.html" hidden>Ir a la sección</a>
+        </div>
+
+        <p id="tut-feedback" class="nota" role="status" aria-live="polite"></p>
+
+        <div class="tut-navegacion">
+          <button type="button" id="tut-anterior" class="boton secundario" disabled>← Anterior</button>
+          <button type="button" id="tut-reiniciar" class="tut-link" title="Reiniciar recorrido">Reiniciar guía</button>
+          <button type="button" id="tut-siguiente" class="boton">Siguiente →</button>
+        </div>
+      </section>
     </div>
   </section>
 </main>
+
 <footer class="pie">
   <div class="contenedor">
     <p><strong>AquaSteps</strong> · Monitoreo de alertas y pérdidas de agua</p>

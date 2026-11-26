@@ -17,15 +17,8 @@
     <nav aria-label="Navegación principal">
       <ul class="menu">
         <li><a href="index.html">Inicio</a></li>
-        <li>
-          <details class="desplegable">
-            <summary>Consultar</summary>
-            <ul class="submenu">
-              <li><a href="alertas.html" aria-current="page">Alertas</a></li>
-              <li><a href="perdidas.html">Pérdidas de agua</a></li>
-            </ul>
-          </details>
-        </li>
+        <li><a href="alertas.html" aria-current="page">Alertas</a></li>
+        <li><a href="perdidas.html">Pérdidas de agua</a></li>
       </ul>
     </nav>
     <button type="button" id="btn-tema" class="btn-tema" aria-pressed="false" aria-label="Modo oscuro" title="Modo oscuro">
@@ -34,12 +27,21 @@
     </button>
   </div>
 </header>
+
 <main id="contenido">
+  <!-- Nivel 1: Avisos prioritarios y monitoreo activo por ambiente -->
   <section class="seccion contenedor" aria-labelledby="titulo">
-    <a class="regresar" href="index.html">← Regresar</a>
-    <p class="etiqueta">Avisos</p>
-    <h1 id="titulo">Alertas</h1>
+    <nav aria-label="Ruta de navegación">
+      <a class="regresar" href="index.html">← Volver al inicio</a>
+    </nav>
+    <header class="encabezado-seccion">
+      <p class="etiqueta">Monitoreo activo</p>
+      <h1 id="titulo">Alertas y estado por lugar</h1>
+      <p class="nota">Prioriza los puntos con mayor pérdida de agua, verifica las acciones sugeridas o solicita asistencia inmediata.</p>
+    </header>
+
     <div id="notificaciones" aria-live="polite"></div>
+
     <div class="barra-filtros">
       <div id="filtros" class="segmento" role="group" aria-label="Filtrar por estado">
         <button type="button" data-filtro="todos" aria-pressed="true">Todos <span class="conteo">0</span></button>
@@ -57,58 +59,114 @@
         </select>
       </div>
     </div>
+
     <div id="lugares" class="dos-columnas lugares" tabindex="-1"></div>
   </section>
-  <section class="seccion fondo">
-    <div class="contenedor dos-columnas formularios">
-      <div>
-        <h2>Registrar medición</h2>
-        <form id="medicion" class="medicion">
-          <label for="lugar">Lugar</label>
-          <select id="lugar" required></select>
-          <label for="cantidad">Cantidad perdida (ml)</label>
-          <input id="cantidad" type="number" min="0" max="1000" step="1" required>
-          <div class="botones">
-            <button type="submit" class="boton">Registrar</button>
-            <button type="button" id="restablecer" class="boton secundario">Restablecer datos</button>
+
+  <!-- Nivel 2: Respuesta y asistencia técnica según gravedad -->
+  <section id="ayuda" class="seccion fondo" aria-labelledby="ayuda-titulo">
+    <div class="contenedor">
+      <header class="encabezado-seccion">
+        <p class="etiqueta">Respuesta y soporte</p>
+        <div class="titulo-fila">
+          <h2 id="ayuda-titulo">Servicios de ayuda según el caso</h2>
+          <div class="orden">
+            <label for="ayuda-lugar">Evaluar lugar</label>
+            <select id="ayuda-lugar"></select>
           </div>
-        </form>
-        <p id="mensaje" class="nota" role="status"></p>
-      </div>
-      <div>
-        <h2>Agregar lugar</h2>
-        <form id="nuevo-lugar" class="medicion">
-          <label for="nuevo-nombre">Nombre del lugar</label>
-          <input id="nuevo-nombre" type="text" maxlength="30" placeholder="Ej.: Lavandería" required autocomplete="off">
-          <div class="par">
-            <div>
-              <label for="nuevo-lat">Latitud (opcional)</label>
-              <input id="nuevo-lat" type="number" step="any" min="-90" max="90" placeholder="-12.046374">
+        </div>
+      </header>
+      <div id="ayuda-diagnostico" class="tarjeta diagnostico" aria-live="polite"></div>
+      <div id="ayuda-servicios" class="dos-columnas servicios-grid"></div>
+    </div>
+  </section>
+
+  <!-- Nivel 3: Registro operativo de mediciones y nuevos ambientes -->
+  <section class="seccion" aria-labelledby="operaciones-titulo">
+    <div class="contenedor">
+      <header class="encabezado-seccion">
+        <p class="etiqueta">Gestión operativa</p>
+        <h2 id="operaciones-titulo">Registro manual y configuración de lugares</h2>
+      </header>
+      <div class="dos-columnas formularios">
+        <article>
+          <h3>Registrar medición</h3>
+          <form id="medicion" class="medicion">
+            <label for="lugar">Lugar</label>
+            <select id="lugar" required></select>
+            <label for="cantidad">Cantidad perdida (ml)</label>
+            <input id="cantidad" type="number" min="0" max="1000" step="1" required>
+            <div class="botones">
+              <button type="submit" class="boton">Registrar</button>
+              <button type="button" id="restablecer" class="boton secundario">Restablecer datos</button>
             </div>
-            <div>
-              <label for="nuevo-lng">Longitud (opcional)</label>
-              <input id="nuevo-lng" type="number" step="any" min="-180" max="180" placeholder="-77.042793">
+          </form>
+          <p id="mensaje" class="nota" role="status"></p>
+        </article>
+        <article>
+          <h3>Agregar nuevo lugar</h3>
+          <form id="nuevo-lugar" class="medicion">
+            <label for="nuevo-nombre">Nombre del lugar</label>
+            <input id="nuevo-nombre" type="text" maxlength="30" placeholder="Ej.: Lavandería" required autocomplete="off">
+            <div class="par">
+              <div>
+                <label for="nuevo-lat">Latitud (opcional)</label>
+                <input id="nuevo-lat" type="number" step="any" min="-90" max="90" placeholder="-12.046374">
+              </div>
+              <div>
+                <label for="nuevo-lng">Longitud (opcional)</label>
+                <input id="nuevo-lng" type="number" step="any" min="-180" max="180" placeholder="-77.042793">
+              </div>
             </div>
-          </div>
-          <div class="botones">
-            <button type="submit" class="boton">Agregar lugar</button>
-            <button type="button" id="usar-ubicacion" class="boton secundario">Usar mi ubicación</button>
-          </div>
-        </form>
-        <p id="mensaje-lugar" class="nota" role="status"></p>
+            <div class="botones">
+              <button type="submit" class="boton">Agregar lugar</button>
+              <button type="button" id="usar-ubicacion" class="boton secundario">Usar mi ubicación</button>
+            </div>
+          </form>
+          <p id="mensaje-lugar" class="nota" role="status"></p>
+        </article>
       </div>
     </div>
   </section>
-  <section class="seccion">
+
+  <!-- Nivel 4: Bitácora secundaria de auditoría -->
+  <section class="seccion fondo" aria-labelledby="historial-titulo">
     <div class="contenedor">
       <div class="titulo-fila">
-        <h2>Historial de movimientos</h2>
+        <div>
+          <p class="etiqueta">Bitácora</p>
+          <h2 id="historial-titulo">Historial de movimientos</h2>
+        </div>
         <button type="button" id="borrar-historial" class="boton secundario">Borrar historial</button>
       </div>
       <ol id="historial" class="historial"></ol>
     </div>
   </section>
 </main>
+
+<dialog id="modal-ayuda" class="modal" aria-labelledby="modal-ayuda-titulo">
+  <form id="form-solicitud" class="modal-contenido" method="dialog">
+    <div class="titulo-fila">
+      <h2 id="modal-ayuda-titulo" class="titulo-peq">Solicitar servicio de ayuda</h2>
+      <button type="button" id="modal-cerrar" class="modal-cerrar" aria-label="Cerrar ventana">×</button>
+    </div>
+    <p id="modal-resumen" class="nota"></p>
+    <div class="modal-campos">
+      <label for="sol-nombre">Tu nombre o contacto</label>
+      <input id="sol-nombre" type="text" maxlength="60" placeholder="Ej.: Familia Pérez" required>
+      <label for="sol-telefono">Teléfono / WhatsApp</label>
+      <input id="sol-telefono" type="tel" maxlength="20" placeholder="Ej.: 987 654 321" required>
+      <label for="sol-detalle">Detalle del problema (autocompletado según sensor)</label>
+      <textarea id="sol-detalle" rows="3" maxlength="240" required></textarea>
+    </div>
+    <div class="botones">
+      <button type="submit" class="boton">Confirmar solicitud</button>
+      <a id="sol-whatsapp" class="boton secundario" href="#" target="_blank" rel="noopener noreferrer">Enviar por WhatsApp</a>
+      <a id="sol-llamar" class="boton secundario" href="#">Llamar ahora</a>
+    </div>
+  </form>
+</dialog>
+
 <footer class="pie">
   <div class="contenedor">
     <p><strong>AquaSteps</strong> · Monitoreo de alertas y pérdidas de agua</p>

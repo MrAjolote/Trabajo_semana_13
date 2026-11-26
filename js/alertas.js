@@ -1,7 +1,8 @@
 /* ==========================================================================
    AquaSteps · Página de Alertas
    - Filtros por estado y orden (gravedad, costo, nombre)
-   - Tarjetas con lista de verificación y botón "Marcar como reparado"
+   - Tarjetas con lista de verificación, botón de asistencia y "Marcar como reparado"
+   - Servicios de ayuda dinámicos según la gravedad y el lugar afectado
    - Registrar medición, agregar y eliminar lugares
    - Historial de movimientos
    ========================================================================== */
@@ -22,9 +23,23 @@
     const mensajeLugar = document.getElementById("mensaje-lugar");
     const listaHistorial = document.getElementById("historial");
 
+    const selectorAyudaLugar = document.getElementById("ayuda-lugar");
+    const cajaDiagnostico = document.getElementById("ayuda-diagnostico");
+    const gridServicios = document.getElementById("ayuda-servicios");
+    const modalAyuda = document.getElementById("modal-ayuda");
+    const formSolicitud = document.getElementById("form-solicitud");
+    const modalResumen = document.getElementById("modal-resumen");
+    const inputSolNombre = document.getElementById("sol-nombre");
+    const inputSolTelefono = document.getElementById("sol-telefono");
+    const inputSolDetalle = document.getElementById("sol-detalle");
+    const linkWhatsapp = document.getElementById("sol-whatsapp");
+    const linkLlamar = document.getElementById("sol-llamar");
+
     let filtroActual = "todos";
     let ordenActual = "gravedad";
-    const abiertos = new Set();   // tarjetas con "condiciones" desplegadas
+    let lugarAyudaManual = false;
+    let servicioActivo = null;
+    const abiertos = new Set();
 
     /* ---------- Notificaciones ---------- */
     function pintarNotificaciones() {
@@ -79,6 +94,23 @@
         return fila;
     }
 
+    function textoBotonAyuda(estado) {
+        if (estado.clave === "critico") { return "Urgencia: Gasfitero 24/7"; }
+        if (estado.clave === "moderado") { return "Contactar gasfitero"; }
+        return "Consultar técnico";
+    }
+
+    function seleccionarLugarAyuda(id, desplazar) {
+        if (!A.buscar(id)) { return; }
+        lugarAyudaManual = true;
+        selectorAyudaLugar.value = id;
+        pintarAyuda();
+        if (desplazar) {
+            const sec = document.getElementById("ayuda");
+            if (sec) { sec.scrollIntoView({ behavior: "smooth" }); }
+        }
+    }
+
     function crearTarjeta(lugar) {
         const estado = A.estadoDe(lugar);
         const articulo = A.crear("article", "lugar");
@@ -96,10 +128,12 @@
         pin.appendChild(icono);
 
         const tarjeta = A.crear("div", "tarjeta");
-        tarjeta.appendChild(A.crear("span", "estado " + estado.clave, estado.nombre));
+        const cabeceraTarjeta = A.crear("div", "lugar-cabecera");
+        cabeceraTarjeta.appendChild(A.crear("h3", "lugar-titulo", lugar.nombre));
+        cabeceraTarjeta.appendChild(A.crear("span", "estado " + estado.clave, estado.nombre));
+        tarjeta.appendChild(cabeceraTarjeta);
 
         const datos = A.crear("dl", "datos");
-        datos.appendChild(filaDato("Lugar", lugar.nombre));
         datos.appendChild(filaDato("Cantidad perdida", A.formatearMl(lugar.ml)));
         datos.appendChild(filaDato("Costo", A.formatearCosto(lugar.ml)));
         tarjeta.appendChild(datos);
@@ -150,7 +184,19 @@
 
         /* Acciones */
         const botones = A.crear("div", "botones centro");
-        const reparar = A.crear("button", "boton", "Marcar como reparado");
+
+        if (lugar.ml > 0) {
+            const claseAyuda = estado.clave === "critico" ? "boton peligro" : "boton";
+            const btnAyuda = A.crear("button", claseAyuda, textoBotonAyuda(estado));
+            btnAyuda.type = "button";
+            btnAyuda.setAttribute("data-foco", "ayuda:" + lugar.id);
+            btnAyuda.addEventListener("click", function () {
+                seleccionarLugarAyuda(lugar.id, true);
+            });
+            botones.appendChild(btnAyuda);
+        }
+
+        const reparar = A.crear("button", "boton" + (lugar.ml > 0 ? " secundario" : ""), "Marcar como reparado");
         reparar.type = "button";
         reparar.disabled = lugar.ml === 0;
         reparar.setAttribute("data-foco", "reparar:" + lugar.id);
@@ -196,10 +242,141 @@
         lista.forEach(function (lugar) { contenedor.appendChild(crearTarjeta(lugar)); });
 
         if (foco) {
-            const nuevo = contenedor.querySelector('[data-foco="' + foco.replace(/"/g, '\\"') + '"]');
+            const nuevo = contenedor.querySelector('[data-foco="' + foco.replace(/"/g, '\"') + '"]');
             if (nuevo && !nuevo.disabled) { nuevo.focus(); }
         }
     }
+
+    /* ---------- Servicios de ayuda dinámicos ---------- */
+    function llenarSelectorAyuda() {
+        const previo = selectorAyudaLugar.value;
+        selectorAyudaLugar.replaceChildren();
+        A.ordenar(A.lugares(), "gravedad").forEach(function (lugar) {
+            const estado = A.estadoDe(lugar);
+            const op = A.crear("option", "", lugar.nombre + " (" + estado.nombre + " · " + A.formatearMl(lugar.ml) + ")");
+            op.value = lugar.id;
+            selectorAyudaLugar.appendChild(op);
+        });
+
+        if (lugarAyudaManual && previo && A.buscar(previo)) {
+            selectorAyudaLugar.value = previo;
+        } else {
+            const ordenados = A.ordenar(A.lugares(), "gravedad");
+            if (ordenados.length > 0) {
+                selectorAyudaLugar.value = ordenados[0].id;
+            }
+        }
+    }
+
+    function actualizarEnlacesModal() {
+        if (!servicioActivo) { return; }
+        const texto = encodeURIComponent(inputSolDetalle.value);
+        const telLimpio = servicioActivo.servicio.telefono.replace(/[^0-9]/g, "");
+        linkWhatsapp.href = "https://wa.me/" + telLimpio + "?text=" + texto;
+        linkLlamar.href = "tel:" + servicioActivo.servicio.telefono;
+    }
+
+    function abrirModalSolicitud(lugar, servicio) {
+        const estado = A.estadoDe(lugar);
+        servicioActivo = { lugar: lugar, servicio: servicio };
+        document.getElementById("modal-ayuda-titulo").textContent = "Contactar: " + servicio.nombre;
+        modalResumen.textContent = "Caso detectado en " + lugar.nombre + " · Estado " + estado.nombre +
+            " (" + A.formatearMl(lugar.ml) + " · " + A.formatearCosto(lugar.ml) + "). Teléfono: " + servicio.telefonoTexto + ".";
+        inputSolDetalle.value = "Hola, solicito asistencia (" + servicio.nombre + ") por fuga de agua en " +
+            lugar.nombre + ". Nivel: " + estado.nombre + " (" + A.formatearMl(lugar.ml) + "). Ubicación: " + A.urlUbicacion(lugar);
+        actualizarEnlacesModal();
+
+        if (typeof modalAyuda.showModal === "function") {
+            modalAyuda.showModal();
+        } else {
+            modalAyuda.setAttribute("open", "");
+        }
+    }
+
+    function cerrarModalSolicitud() {
+        if (typeof modalAyuda.close === "function" && modalAyuda.open) {
+            modalAyuda.close();
+        } else {
+            modalAyuda.removeAttribute("open");
+        }
+    }
+
+    document.getElementById("modal-cerrar").addEventListener("click", cerrarModalSolicitud);
+    inputSolDetalle.addEventListener("input", actualizarEnlacesModal);
+
+    modalAyuda.addEventListener("click", function (evento) {
+        if (evento.target === modalAyuda) { cerrarModalSolicitud(); }
+    });
+
+    formSolicitud.addEventListener("submit", function (evento) {
+        evento.preventDefault();
+        if (!servicioActivo) { return; }
+        const contacto = inputSolNombre.value.trim();
+        const telefono = inputSolTelefono.value.trim();
+        if (!contacto || !telefono) { return; }
+        A.registrarSolicitudAyuda(
+            servicioActivo.lugar.id,
+            servicioActivo.servicio.nombre,
+            contacto,
+            telefono
+        );
+        cerrarModalSolicitud();
+        formSolicitud.reset();
+        A.avisar("Solicitud enviada a " + servicioActivo.servicio.nombre + " para " + servicioActivo.lugar.nombre + ".", "sin");
+    });
+
+    function pintarAyuda() {
+        const lugar = A.buscar(selectorAyudaLugar.value) || A.lugares()[0];
+        if (!lugar) { return; }
+        const estado = A.estadoDe(lugar);
+        const pack = A.serviciosParaLugar(lugar);
+
+        cajaDiagnostico.replaceChildren();
+        const cabeceraDiag = A.crear("div", "diagnostico-cabecera");
+        cabeceraDiag.appendChild(A.crear("span", "estado " + estado.clave, estado.nombre));
+        cabeceraDiag.appendChild(A.crear("strong", "", lugar.nombre + " · " + A.formatearMl(lugar.ml) + " (" + A.formatearCosto(lugar.ml) + ")"));
+        cajaDiagnostico.appendChild(cabeceraDiag);
+        cajaDiagnostico.appendChild(A.crear("h3", "titulo-peq", pack.titulo));
+        cajaDiagnostico.appendChild(A.crear("p", "", pack.descripcion));
+
+        gridServicios.replaceChildren();
+        pack.servicios.forEach(function (srv) {
+            const card = A.crear("article", "tarjeta servicio-card");
+            const top = A.crear("div", "servicio-top");
+            top.appendChild(A.crear("span", "servicio-cat", srv.categoria));
+            top.appendChild(A.crear("span", "servicio-badge " + estado.clave, srv.prioridad));
+            card.appendChild(top);
+
+            card.appendChild(A.crear("h3", "titulo-peq", srv.nombre));
+            card.appendChild(A.crear("p", "", srv.detalle));
+
+            const datosSrv = A.crear("dl", "datos");
+            datosSrv.appendChild(filaDato("Tiempo estimado", srv.tiempo));
+            datosSrv.appendChild(filaDato("Tarifa referencial", srv.tarifa));
+            datosSrv.appendChild(filaDato("Contacto directo", srv.telefonoTexto));
+            card.appendChild(datosSrv);
+
+            const accionesSrv = A.crear("div", "botones");
+            const btnSolicitar = A.crear("button", estado.clave === "critico" ? "boton peligro" : "boton", "Solicitar asistencia");
+            btnSolicitar.type = "button";
+            btnSolicitar.addEventListener("click", function () {
+                abrirModalSolicitud(lugar, srv);
+            });
+            accionesSrv.appendChild(btnSolicitar);
+
+            const enlaceTel = A.crear("a", "boton secundario", "Llamar");
+            enlaceTel.href = "tel:" + srv.telefono;
+            accionesSrv.appendChild(enlaceTel);
+
+            card.appendChild(accionesSrv);
+            gridServicios.appendChild(card);
+        });
+    }
+
+    selectorAyudaLugar.addEventListener("change", function () {
+        lugarAyudaManual = true;
+        pintarAyuda();
+    });
 
     /* ---------- Registrar medición ---------- */
     function llenarSelector() {
@@ -220,6 +397,8 @@
             mensaje.textContent = "Ingresa una cantidad válida entre 0 y " + A.MAX_ML + " ml.";
             return;
         }
+        lugarAyudaManual = true;
+        selectorAyudaLugar.value = lugar.id;
         mensaje.textContent = lugar.nombre + ": " + A.formatearMl(lugar.ml) + " registrados. Estado: " + A.estadoDe(lugar).nombre + ".";
         document.getElementById("cantidad").value = "";
     });
@@ -228,6 +407,7 @@
         if (!window.confirm("Se borrarán tus lugares, mediciones e historial y volverán los datos iniciales. ¿Continuar?")) { return; }
         abiertos.clear();
         filtroActual = "todos";
+        lugarAyudaManual = false;
         A.restablecerTodo();
         mensaje.textContent = "Se restablecieron los datos iniciales.";
     });
@@ -296,11 +476,24 @@
     /* ---------- Todo junto ---------- */
     function actualizar() {
         if (selectorLugar.options.length !== A.lugares().length) { llenarSelector(); }
+        llenarSelectorAyuda();
         pintarNotificaciones();
         pintarFiltros();
         pintarLugares();
+        pintarAyuda();
         pintarHistorial();
     }
+
+    // Leer parámetro ?lugar=... si viene desde Inicio o Pérdidas
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const paramLugar = params.get("lugar");
+        if (paramLugar && A.buscar(paramLugar)) {
+            lugarAyudaManual = true;
+            llenarSelectorAyuda();
+            selectorAyudaLugar.value = paramLugar;
+        }
+    } catch (e) { /* sin parámetros */ }
 
     llenarSelector();
     actualizar();

@@ -17,15 +17,8 @@
     <nav aria-label="Navegación principal">
       <ul class="menu">
         <li><a href="index.html">Inicio</a></li>
-        <li>
-          <details class="desplegable">
-            <summary>Consultar</summary>
-            <ul class="submenu">
-              <li><a href="alertas.html">Alertas</a></li>
-              <li><a href="perdidas.html" aria-current="page">Pérdidas de agua</a></li>
-            </ul>
-          </details>
-        </li>
+        <li><a href="alertas.html">Alertas</a></li>
+        <li><a href="perdidas.html" aria-current="page">Pérdidas de agua</a></li>
       </ul>
     </nav>
     <button type="button" id="btn-tema" class="btn-tema" aria-pressed="false" aria-label="Modo oscuro" title="Modo oscuro">
@@ -34,37 +27,48 @@
     </button>
   </div>
 </header>
+
 <main id="contenido">
+  <!-- Nivel 1: Encabezado ejecutivo, exportación rápida, KPIs y acciones inmediatas -->
   <section class="seccion contenedor" aria-labelledby="titulo">
-    <a class="regresar" href="index.html">← Regresar</a>
-    <p class="etiqueta">Consumo</p>
-    <h1 id="titulo">Pérdidas</h1>
-    <h2><span id="fecha-actual"></span></h2>
-    <div class="tabla-caja">
-      <table class="tabla">
-        <thead>
-          <tr>
-            <th>Pérdida</th>
-            <th>Costo</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-total"></tbody>
-      </table>
+    <nav aria-label="Ruta de navegación">
+      <a class="regresar" href="index.html">← Volver al inicio</a>
+    </nav>
+    <div class="titulo-fila">
+      <div>
+        <p class="etiqueta">Análisis de consumo</p>
+        <h1 id="titulo">Pérdidas de agua y diagnóstico</h1>
+        <p class="fecha">Reporte correspondiente a: <span id="fecha-actual"></span></p>
+      </div>
+      <div class="botones no-imprimir">
+        <button type="button" id="btn-csv" class="boton">Descargar reporte (CSV)</button>
+        <button type="button" id="btn-imprimir" class="boton secundario">Imprimir / guardar PDF</button>
+      </div>
     </div>
-    <div class="botones no-imprimir">
-      <button type="button" id="btn-csv" class="boton">Descargar reporte (CSV)</button>
-      <button type="button" id="btn-imprimir" class="boton secundario">Imprimir / guardar PDF</button>
-    </div>
-  </section>
-  <section class="seccion">
-    <div class="contenedor dos-columnas informe">
+
+    <div class="dos-columnas informe resumen-superior">
       <article class="tarjeta">
         <h2>Informe de hoy</h2>
         <div id="cifras" class="cifras"></div>
-        <p><b>Pérdida por lugar</b></p>
+        <h3>Distribución por lugar</h3>
         <ul id="barras" class="barras" aria-label="Porcentaje de la pérdida por lugar"></ul>
         <p id="resumen" class="nota"></p>
+        <details class="condiciones">
+          <summary>Ver consolidado en tabla</summary>
+          <div class="tabla-caja">
+            <table class="tabla">
+              <thead>
+                <tr>
+                  <th>Pérdida total</th>
+                  <th>Costo estimado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-total"></tbody>
+            </table>
+          </div>
+        </details>
       </article>
+
       <article class="tarjeta">
         <h2>Acciones recomendadas</h2>
         <div class="progreso">
@@ -75,11 +79,16 @@
       </article>
     </div>
   </section>
-  <section class="seccion">
+
+  <!-- Nivel 2: Visualización comparativa interactiva -->
+  <section class="seccion" aria-labelledby="grafico-titulo">
     <div class="contenedor">
       <article class="tarjeta">
         <div class="titulo-fila">
-          <h2 id="grafico-titulo" class="titulo-peq">Pérdida de hoy por lugar</h2>
+          <div>
+            <p class="etiqueta">Tendencia y comparación</p>
+            <h2 id="grafico-titulo" class="titulo-peq">Pérdida de hoy por lugar</h2>
+          </div>
           <div class="controles no-imprimir">
             <div id="grafico-periodo" class="segmento" role="group" aria-label="Periodo del gráfico">
               <button type="button" data-valor="hoy" aria-pressed="true">Hoy</button>
@@ -108,11 +117,14 @@
       </article>
     </div>
   </section>
-  <section class="seccion fondo">
+
+  <!-- Nivel 3: Proyección financiera e hídrica -->
+  <section class="seccion fondo" aria-labelledby="calc-titulo">
     <div class="contenedor">
       <article class="tarjeta calculadora">
-        <h2>Calculadora de ahorro</h2>
-        <p>Descubre cuánto agua y dinero ahorrarías si reparas la fuga.</p>
+        <p class="etiqueta">Proyección de impacto</p>
+        <h2 id="calc-titulo">Calculadora de ahorro</h2>
+        <p>Descubre cuánta agua y dinero ahorrarías si reparas la fuga.</p>
         <div class="dos-columnas calc-controles">
           <div class="calc-campo">
             <label for="calc-parte">Parte de la fuga que reparas: <output id="calc-parte-valor">100 %</output></label>
@@ -139,6 +151,7 @@
     </div>
   </section>
 </main>
+
 <footer class="pie">
   <div class="contenedor">
     <p><strong>AquaSteps</strong> · Monitoreo de alertas y pérdidas de agua</p>
