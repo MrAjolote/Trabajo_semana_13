@@ -1,9 +1,7 @@
 /* ==========================================================================
    AquaSteps · Núcleo
    Datos compartidos entre todas las páginas: lugares, estados de fuga,
-   historial, operaciones marcadas y avisos emergentes.
-   Todo se guarda en localStorage, así que lo que haces en una página
-   (por ejemplo simular una fuga en Inicio) se ve en las demás.
+   servicios de ayuda dinámica, historial, operaciones marcadas y avisos.
    ========================================================================== */
 (function () {
     "use strict";
@@ -53,6 +51,132 @@
         }
     };
 
+    const SERVICIOS_POR_ESTADO = {
+        critico: {
+            titulo: "Atención de emergencia recomendada (Respuesta inmediata)",
+            descripcion: "La pérdida supera el umbral crítico. Se recomienda cerrar la llave general del ambiente y contactar de inmediato a un gasfitero de urgencia o a la línea de emergencias de agua.",
+            servicios: [
+                {
+                    id: "gasfitero-247",
+                    nombre: "Gasfitero de Emergencia 24/7",
+                    categoria: "Urgencia domiciliaria",
+                    prioridad: "Prioritario",
+                    tiempo: "Llegada en 30–45 min",
+                    tarifa: "Desde S/ 70,00 (visita urgente)",
+                    telefono: "+51999111222",
+                    telefonoTexto: "999 111 222",
+                    detalle: "Corte de fuga activa, sellado de tuberías rotas y reemplazo inmediato de llaves de paso o uniones."
+                },
+                {
+                    id: "detec-ultrasonido",
+                    nombre: "Especialista en Fugas Ocultas y Tuberías",
+                    categoria: "Diagnóstico técnico",
+                    prioridad: "Recomendado",
+                    tiempo: "Atención en el día",
+                    tarifa: "Desde S/ 95,00 (inspección técnica)",
+                    telefono: "+51999333444",
+                    telefonoTexto: "999 333 444",
+                    detalle: "Detección de filtraciones internas en muros o pisos sin romper innecesariamente y reparación integral."
+                },
+                {
+                    id: "sedapal-emergencia",
+                    nombre: "Aquafono SEDAPAL · Emergencias de Red",
+                    categoria: "Servicio público",
+                    prioridad: "Si afecta acometida",
+                    tiempo: "Atención telefónica 24 h",
+                    tarifa: "Gratuito (red externa / medidor)",
+                    telefono: "+5113178000",
+                    telefonoTexto: "(01) 317-8000",
+                    detalle: "Reporta fugas en la caja del medidor, vereda o matriz externa de agua potable."
+                }
+            ]
+        },
+        moderado: {
+            titulo: "Mantenimiento preventivo con gasfitero programado",
+            descripcion: "La fuga es constante y puede agravar la presión en la instalación. Conviene agendar un técnico gasfitero para cambiar empaques, válvulas o conexiones desgastadas.",
+            servicios: [
+                {
+                    id: "gasfitero-preventivo",
+                    nombre: "Gasfitero Residencial Certificado",
+                    categoria: "Mantenimiento preventivo",
+                    prioridad: "Recomendado",
+                    tiempo: "Visita hoy o en 24 h",
+                    tarifa: "Desde S/ 45,00 (revisión + ajuste)",
+                    telefono: "+51999555666",
+                    telefonoTexto: "999 555 666",
+                    detalle: "Cambio de empaques, o-rings, válvulas check, sifones y calibración de grifería en cocina o baño."
+                },
+                {
+                    id: "tecnico-sanitario",
+                    nombre: "Técnico en Grifería y Sanitarios",
+                    categoria: "Reparación de accesorios",
+                    prioridad: "Opcional",
+                    tiempo: "Cita programada",
+                    tarifa: "Desde S/ 50,00",
+                    telefono: "+51999777888",
+                    telefonoTexto: "999 777 888",
+                    detalle: "Mantenimiento de mezcladoras, tanques de inodoro, fluxómetros y llaves angulares."
+                }
+            ]
+        },
+        leve: {
+            titulo: "Orientación técnica y diagnóstico rápido",
+            descripcion: "El goteo es leve. Puedes recibir orientación virtual gratuita de un técnico o solicitar un kit de repuestos básicos antes de requerir visita presencial.",
+            servicios: [
+                {
+                    id: "consulta-virtual",
+                    nombre: "Asesoría Virtual con Gasfitero",
+                    categoria: "Orientación por videollamada",
+                    prioridad: "Recomendado",
+                    tiempo: "Respuesta en 15 min",
+                    tarifa: "Gratuito (diagnóstico inicial)",
+                    telefono: "+51999222333",
+                    telefonoTexto: "999 222 333",
+                    detalle: "Envía una foto o video del punto con goteo para identificar si basta con ajustar o cambiar un empaque."
+                },
+                {
+                    id: "kit-reparacion",
+                    nombre: "Ferretería y Repuestos a Domicilio",
+                    categoria: "Insumos de gasfitería",
+                    prioridad: "Apoyo",
+                    tiempo: "Entrega en 60 min",
+                    tarifa: "Desde S/ 12,00 (kit empaques + teflón)",
+                    telefono: "+51999444555",
+                    telefonoTexto: "999 444 555",
+                    detalle: "Envío de cinta teflón, empaques universales, llaves de ajuste y selladores para reparaciones menores."
+                }
+            ]
+        },
+        sin: {
+            titulo: "Sin incidencias · Asistencia preventiva opcional",
+            descripcion: "Este punto no registra pérdidas de agua. Si sospechas de humedad oculta o deseas una revisión anual de tus instalaciones, tienes estas opciones disponibles.",
+            servicios: [
+                {
+                    id: "chequeo-preventivo",
+                    nombre: "Inspección Preventiva del Hogar",
+                    categoria: "Mantenimiento anual",
+                    prioridad: "Preventivo",
+                    tiempo: "Según agenda",
+                    tarifa: "Desde S/ 40,00",
+                    telefono: "+51999555666",
+                    telefonoTexto: "999 555 666",
+                    detalle: "Revisión general de presión de agua, estado de llaves de paso y prevención de fugas silenciosas."
+                },
+                {
+                    id: "orientacion-hidrica",
+                    nombre: "Línea de Orientación y Consumo Responsable",
+                    categoria: "Soporte AquaSteps",
+                    prioridad: "Informativo",
+                    tiempo: "Disponible 24/7",
+                    tarifa: "Gratuito",
+                    telefono: "+5113178000",
+                    telefonoTexto: "(01) 317-8000",
+                    detalle: "Consultas sobre lectura de medidor, detección temprana de filtraciones y ahorro de agua en casa."
+                }
+            ]
+        }
+    };
+
     const LUGARES_BASE = [
         { id: "cocina", nombre: "Cocina", ml: 32, pico: 32, lat: -12.046374, lng: -77.042793 },
         { id: "bano", nombre: "Baño", ml: 20, pico: 20, lat: -12.046402, lng: -77.042741 }
@@ -89,6 +213,11 @@
 
     function estadoDe(lugar) { return clasificarEstado(lugar.ml); }
 
+    function serviciosParaLugar(lugar) {
+        const estado = estadoDe(lugar);
+        return SERVICIOS_POR_ESTADO[estado.clave] || SERVICIOS_POR_ESTADO.sin;
+    }
+
     function urlUbicacion(lugar) { return "https://www.google.com/maps?q=" + lugar.lat + "," + lugar.lng; }
     function textoUbicacion(lugar) { return lugar.lat.toFixed(6) + ", " + lugar.lng.toFixed(6); }
 
@@ -97,7 +226,6 @@
         if (criterio === "nombre") {
             return copia.sort(function (a, b) { return a.nombre.localeCompare(b.nombre, "es"); });
         }
-        // "gravedad" y "costo" coinciden: a más ml, más gravedad y más costo
         return copia.sort(function (a, b) { return b.ml - a.ml || a.nombre.localeCompare(b.nombre, "es"); });
     }
 
@@ -118,7 +246,6 @@
 
     function datosIniciales() {
         const lugares = copiaBase();
-        // Migración: la versión anterior guardaba solo { cocina: 32, bano: 20 }
         try {
             const viejas = JSON.parse(localStorage.getItem(CLAVE_ANTIGUA));
             if (viejas && typeof viejas === "object") {
@@ -159,7 +286,6 @@
 
     function alCambiar(fn) { oyentes.push(fn); }
 
-    // Si otra pestaña cambia los datos, esta pestaña se actualiza sola.
     window.addEventListener("storage", function (evento) {
         if (evento.key === CLAVE_DATOS) {
             datos = cargar();
@@ -185,7 +311,8 @@
     /* ---------- Historial ---------- */
     const TIPOS = {
         medicion: "Medición", simulacion: "Simulación", vivo: "En vivo",
-        reparacion: "Reparación", lugar: "Lugar", sistema: "Sistema"
+        reparacion: "Reparación", lugar: "Lugar", sistema: "Sistema",
+        asistencia: "Asistencia"
     };
 
     function anotar(tipo, texto) {
@@ -200,12 +327,6 @@
     }
 
     /* ---------- Cambios de datos ---------- */
-    /**
-     * Cambia los ml de un lugar.
-     * opciones.tipo      → tipo de registro en el historial
-     * opciones.texto     → texto del historial
-     * opciones.registrar → true (siempre) | "solo-cambio" (solo si cambia el estado) | false
-     */
     function fijarMl(id, ml, opciones) {
         const lugar = buscar(id);
         const valor = Number(ml);
@@ -260,6 +381,15 @@
             texto: lugar.nombre + " reparado: la pérdida bajó de " + formatearMl(eraMl) + " a 0 ml."
         });
         return lugar;
+    }
+
+    function registrarSolicitudAyuda(lugarId, servicioNombre, contacto, telefono) {
+        const lugar = buscar(lugarId);
+        const nombreLugar = lugar ? lugar.nombre : "General";
+        const detalleMl = lugar ? " (" + formatearMl(lugar.ml) + " · " + estadoDe(lugar).nombre + ")" : "";
+        anotar("asistencia", "Solicitud a " + servicioNombre + " para " + nombreLugar + detalleMl + " · Contacto: " + contacto + " (" + telefono + ").");
+        guardar();
+        emitir();
     }
 
     function agregarLugar(nombre, lat, lng) {
@@ -361,11 +491,12 @@
         crear: crear, numeroEntre: numeroEntre,
         formatearMl: formatearMl, formatearCosto: formatearCosto, formatearSoles: formatearSoles,
         formatearLitros: formatearLitros, calcularCosto: calcularCosto,
-        clasificarEstado: clasificarEstado, estadoDe: estadoDe,
+        clasificarEstado: clasificarEstado, estadoDe: estadoDe, serviciosParaLugar: serviciosParaLugar,
         urlUbicacion: urlUbicacion, textoUbicacion: textoUbicacion, ordenar: ordenar,
         lugares: lugares, historial: historial, buscar: buscar, totalMl: totalMl,
         pendientes: pendientes, estadoGeneral: estadoGeneral,
         fijarMl: fijarMl, registrarMedicion: registrarMedicion, repararLugar: repararLugar,
+        registrarSolicitudAyuda: registrarSolicitudAyuda,
         agregarLugar: agregarLugar, eliminarLugar: eliminarLugar, restablecerTodo: restablecerTodo,
         anotar: function (tipo, texto) { anotar(tipo, texto); guardar(); emitir(); },
         limpiarHistorial: limpiarHistorial,
